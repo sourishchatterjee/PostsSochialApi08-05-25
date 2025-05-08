@@ -34,10 +34,10 @@ class category {
           const categoryWithDetails = await categoryModel.aggregate([
             {
               $lookup: {
-                from: "posts", // should match the actual MongoDB collection name
+                from: "posts", 
                 localField: "_id",
                 foreignField: "categoryId",
-                as: "posts", // all posts under this category
+                as: "posts", 
               },
             },
           ]);

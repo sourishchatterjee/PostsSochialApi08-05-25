@@ -1,5 +1,6 @@
 const postModel = require("../models/postModel");
 const likeModel = require("../models/likeModel");
+const comentModel= require("../models/commentModel")
 
 class PostController {
   // CREATE a post
@@ -118,6 +119,105 @@ class PostController {
       res.status(500).json({ success: false, message: "Post deletion failed", error: error.message });
     }
   };
+
+
+
+
+
+  getPostWithAllDetails = async (req, res) => {
+    try {
+      const postId = req.params.id;
+  
+      const postDetails = await postModel.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(postId) } },
+  
+        // Join with User
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        { $unwind: "$user" },
+  
+        // Join with Category
+        {
+          $lookup: {
+            from: "categories",
+            localField: "categoryId",
+            foreignField: "_id",
+            as: "category",
+          },
+        },
+        { $unwind: "$category" },
+  
+        // Join with Comments
+        {
+          $lookup: {
+            from: "comments",
+            let: { postId: "$_id" },
+            pipeline: [
+              { $match: { $expr: { $eq: ["$postId", "$$postId"] } } },
+              {
+                $lookup: {
+                  from: "users",
+                  localField: "userId",
+                  foreignField: "_id",
+                  as: "user",
+                },
+              },
+              { $unwind: "$user" }
+            ],
+            as: "comments",
+          },
+        },
+  
+        // Get like count
+        {
+          $lookup: {
+            from: "likes",
+            localField: "_id",
+            foreignField: "postId",
+            as: "likes",
+          },
+        },
+        {
+          $addFields: {
+            likeCount: { $size: "$likes" },
+          },
+        },
+        {
+          $project: {
+            likes: 0, 
+            __v: 0,
+            "user.password": 0,
+            "comments.user.password": 0,
+          },
+        },
+      ]);
+  
+      if (postDetails.length === 0) {
+        return res.status(404).json({ success: false, message: "Post not found" });
+      }
+  
+      res.status(200).json({
+        success: true,
+        data: postDetails[0],
+      });
+    } catch (error) {
+      console.error("Aggregation error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch post details",
+        error: error.message,
+      });
+    }
+  };
+  
+
+
 }
 
 module.exports = new PostController();

@@ -6,7 +6,7 @@ const path= require('path')
 const router = require('./router/router')
 const categoryrouter = require("./router/categoryrouter");
 const postrouter= require("./router/postrouter")
-
+const likerouter= require("./router/likerouter")
 
  app.use(express.json());
  app.use(express.urlencoded({extends:true}));
@@ -16,7 +16,8 @@ const postrouter= require("./router/postrouter")
 
 app.use('/',router);
 app.use('/category',categoryrouter)
-app.use("/",postrouter)
+app.use("/",postrouter);
+app.use("/",likerouter);
 
 
 

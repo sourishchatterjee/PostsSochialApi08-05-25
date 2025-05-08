@@ -15,5 +15,6 @@ postrouter.get("/getallpost", authCheck.authenticateJWTcheck,postController.getA
 postrouter.get("/getpost/:id",authCheck.authenticateJWTcheck, postController.getPostById);
 postrouter.put("/updatepost/:id",authCheck.authenticateJWTcheck, postController.updatePost);
 postrouter.delete("/:id",authCheck.authenticateJWTcheck, postController.deletePost);
+postrouter.get("/alldetails",authCheck.authenticateJWTcheck, postController.getPostWithAllDetails);
 
 module.exports = postrouter;
